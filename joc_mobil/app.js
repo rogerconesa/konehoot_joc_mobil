@@ -28,6 +28,8 @@ let tempsRestant  = 0;
 let tempsInici    = 0;
 let subscripcionsIniciades = false;
 let jugadorDocId  = '';
+let jocs          = [];
+let jocSeleccionat = '';
 
 // ── Nom d'usuari ──────────────────────────────────────────────────────
 const LS_NOM = 'konehoot_nom_joc';
@@ -63,12 +65,22 @@ window.usarNomNou = function() {
 
 window.confirmarNom = function() {
   const val = document.getElementById('nom-input').value.trim();
+  const jocId = document.getElementById('joc-select').value;
   if (!val) {
     document.getElementById('nom-input').classList.add('error');
     setTimeout(() => document.getElementById('nom-input').classList.remove('error'), 600);
     return;
   }
+  if (!jocId) {
+    const connStatusEl = document.getElementById('mob-conn-status');
+    if (connStatusEl) {
+      connStatusEl.style.display = 'block';
+      connStatusEl.textContent = 'Selecciona un joc abans d\'entrar.';
+    }
+    return;
+  }
   nom = val;
+  jocSeleccionat = jocId;
   jugadorDocId = normalitzarJugadorId(nom);
   localStorage.setItem(LS_NOM, nom);
   entrarAlJoc();
@@ -76,10 +88,21 @@ window.confirmarNom = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
   iniciarSeleccioNom();
+  carregarJocs();
   document.getElementById('nom-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') window.confirmarNom();
   });
 });
+
+function carregarJocs() {
+  onSnapshot(query(collection(db, 'jocs'), orderBy('createdAt', 'asc')), snap => {
+    jocs = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(j => j.actiu !== false);
+    const sel = document.getElementById('joc-select');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Selecciona joc</option>' + jocs.map(j => `<option value="${j.id}">${esc(j.nom || j.id)}</option>`).join('');
+    if (jocSeleccionat) sel.value = jocSeleccionat;
+  });
+}
 
 // ── Entrar al joc ─────────────────────────────────────────────────────
 async function entrarAlJoc() {
@@ -91,9 +114,9 @@ async function entrarAlJoc() {
     connStatusEl.textContent = '';
   }
   try {
-      await setDoc(
+    await setDoc(
       doc(db, 'partida', 'estat', 'jugadors', jugadorDocId),
-      { nom, punts: 0, connectatAt: serverTimestamp() },
+      { nom, jocId: jocSeleccionat, punts: 0, connectatAt: serverTimestamp() },
       { merge: true }
     );
   } catch(e) {
@@ -129,6 +152,10 @@ function iniciarSubscripcions() {
     if (canviPregunta) haRespost = false;
 
     const fase = partida.fase || 'espera';
+    if (partida.jocId && jocSeleccionat && partida.jocId !== jocSeleccionat) {
+      mostrarScreen('screen-espera');
+      return;
+    }
     if (fase === 'espera')        mostrarScreen('screen-espera');
     else if (fase === 'pregunta') renderPregunta();
     else if (fase === 'resultats') mostrarResultatsUsuari();
@@ -136,10 +163,14 @@ function iniciarSubscripcions() {
   });
 }
 
+function preguntesActives() {
+  return preguntes.filter(p => (p.jocId || '') === jocSeleccionat);
+}
+
 // ── PREGUNTA ──────────────────────────────────────────────────────────
 function renderPregunta() {
   const idx = partida.preguntaIndex ?? 0;
-  const p   = preguntes[idx];
+  const p   = preguntesActives()[idx];
   if (!p) return;
 
   haRespost = false;
@@ -155,7 +186,7 @@ function renderPregunta() {
     b.classList.remove('seleccionada','correcta','incorrecta','disabled');
     b.disabled = false;
   });
-  document.getElementById('mob-num').textContent = `${idx + 1} / ${preguntes.length}`;
+  document.getElementById('mob-num').textContent = `${idx + 1} / ${preguntesActives().length}`;
   document.getElementById('mob-autor').textContent = `De: ${p.autor}`;
   document.getElementById('mob-pregunta').textContent = p.pregunta;
 
@@ -201,6 +232,7 @@ function bloquejatSenseResposta() {
   });
   document.getElementById('mob-status').textContent = 'Temps esgotat!';
   document.getElementById('mob-status').style.display = 'block';
+  updateDoc(doc(db, 'partida', 'estat'), { fase: 'resultats' }).catch(() => {});
 }
 
 // ── Respondre ─────────────────────────────────────────────────────────
@@ -214,8 +246,9 @@ window.respondre = async function(idx) {
   const total = partida.tempsPregunta || 20;
   const tempsUsat = (Date.now() - tempsInici) / 1000;
   const tempsRapidesa = Math.max(0, total - tempsUsat);
-  // Puntuació: 1000 base + fins 500 per rapidesa
-  const punts = Math.round(1000 + (tempsRapidesa / total) * 500);
+  const puntsBase = partida.puntsBase || 1000;
+  const puntsRapidesa = partida.puntsRapidesa || 500;
+  const punts = Math.round(puntsBase + (tempsRapidesa / total) * puntsRapidesa);
   const puntsGuanyats = esCorrecta ? punts : 0;
 
   // Marca el botó
@@ -254,7 +287,7 @@ function mostrarEsperant(idx) {
 async function mostrarResultatsUsuari() {
   clearInterval(timerInterval);
   const idx = partida.preguntaIndex ?? 0;
-  const p   = preguntes[idx];
+  const p   = preguntesActives()[idx];
   if (!p) return;
 
   // Comprova si ha respost correctament
@@ -309,4 +342,8 @@ function mostrarScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
   const el = document.getElementById(id);
   if (el) el.style.display = 'flex';
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
