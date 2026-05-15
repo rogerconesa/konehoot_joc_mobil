@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Konehoot · Juga!</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+
+<!-- NOM -->
+<div class="screen" id="screen-nom" style="display:flex">
+  <div class="konehoot-logo nom-logo">Kone<span>hoot</span></div>
+  <div class="nom-sub">Com et diuen al grup?</div>
+
+  <div id="bloc-nom-desat">
+    <div class="nom-desat-label">Hola de nou!</div>
+    <div id="nom-desat">Nom</div>
+    <button class="btn-nom-desat" onclick="usarNomDesat()">Soc jo, entrar →</button>
+  </div>
+
+  <div class="separador">o entra amb un nom diferent</div>
+
+  <div class="nom-form">
+    <input type="text" id="nom-input" placeholder="El teu nom al grup" maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="btn-confirmar" onclick="confirmarNom()">Entrar al joc →</button>
+  </div>
+</div>
+
+<!-- ESPERA -->
+<div class="screen" id="screen-espera">
+  <div class="espera-icon">🎮</div>
+  <div class="espera-title">Estàs a punt!</div>
+  <div class="espera-nom" id="nom-confirmat"></div>
+  <div class="espera-hint">Espera que l'admin<br>iniciï el joc</div>
+  <div class="dots">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+</div>
+
+<!-- PREGUNTA -->
+<div class="screen" id="screen-pregunta">
+  <div class="mob-topbar">
+    <div class="mob-num" id="mob-num">1 / 10</div>
+    <div class="mob-autor" id="mob-autor"></div>
+  </div>
+
+  <div class="mob-timer-wrap">
+    <div id="mob-timer-num">20</div>
+    <div class="mob-timer-track">
+      <div id="mob-timer-fill"></div>
+    </div>
+  </div>
+
+  <div class="mob-pregunta-box">
+    <div id="mob-pregunta"></div>
+    <div id="mob-status"></div>
+  </div>
+
+  <div class="mob-grid">
+    <button class="resp-btn" id="mob-r0" onclick="respondre(0)">
+      <span class="btn-lletra">A</span>
+      <span class="btn-text"></span>
+    </button>
+    <button class="resp-btn" id="mob-r1" onclick="respondre(1)">
+      <span class="btn-lletra">B</span>
+      <span class="btn-text"></span>
+    </button>
+    <button class="resp-btn" id="mob-r2" onclick="respondre(2)">
+      <span class="btn-lletra">C</span>
+      <span class="btn-text"></span>
+    </button>
+    <button class="resp-btn" id="mob-r3" onclick="respondre(3)">
+      <span class="btn-lletra">D</span>
+      <span class="btn-text"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ESPERANT RESULTATS -->
+<div class="screen" id="screen-esperant">
+  <div class="esperant-badge" id="esperant-lletra">A</div>
+  <div class="esperant-title">Resposta enviada!</div>
+  <div class="esperant-hint">Espera que l'admin mostri els resultats</div>
+  <div class="dots-sm">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+</div>
+
+<!-- RESULTATS -->
+<div class="screen" id="screen-resultats">
+  <div class="res-icon" id="res-icon">🎉</div>
+  <div class="res-titol" id="res-titol">Correcte!</div>
+  <div class="res-correcta-text" id="res-correcta-text"></div>
+  <div id="res-punts-wrap">
+    <div id="res-punts">+1000</div>
+    <div class="res-punts-label">punts guanyats</div>
+  </div>
+  <div id="res-total-punts"></div>
+  <div class="esperant-seguent">Espera la següent pregunta…</div>
+  <div class="dots-sm dots">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div class="screen" id="screen-final">
+  <div class="final-congrats">🏆</div>
+  <div class="final-title">Joc acabat!<br><span>Gràcies!</span></div>
+  <div class="final-nom-title">Has jugat com a <span id="final-nom"></span></div>
+  <div class="final-punts-box">
+    <div class="final-punts-label">Puntuació final</div>
+    <div id="final-punts">0</div>
+  </div>
+  <div class="final-hint">Mira la pantalla gran per veure el rànquing!</div>
+</div>
+
+</body>
+</html>
