@@ -54,7 +54,17 @@ function iniciarSeleccioNom() {
 }
 
 window.usarNomDesat = function() {
+  const jocId = document.getElementById('joc-select').value;
+  if (!jocId) {
+    const connStatusEl = document.getElementById('mob-conn-status');
+    if (connStatusEl) {
+      connStatusEl.style.display = 'block';
+      connStatusEl.textContent = 'Selecciona un joc abans d\'entrar.';
+    }
+    return;
+  }
   nom = localStorage.getItem(LS_NOM);
+  jocSeleccionat = jocId;
   if (nom) entrarAlJoc();
 };
 
@@ -89,6 +99,8 @@ window.confirmarNom = function() {
 document.addEventListener('DOMContentLoaded', () => {
   iniciarSeleccioNom();
   carregarJocs();
+  actualitzarEstatEntrada();
+  document.getElementById('joc-select').addEventListener('change', actualitzarEstatEntrada);
   document.getElementById('nom-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') window.confirmarNom();
   });
@@ -101,7 +113,17 @@ function carregarJocs() {
     if (!sel) return;
     sel.innerHTML = '<option value="">Selecciona joc</option>' + jocs.map(j => `<option value="${j.id}">${esc(j.nom || j.id)}</option>`).join('');
     if (jocSeleccionat) sel.value = jocSeleccionat;
+    actualitzarEstatEntrada();
   });
+}
+
+function actualitzarEstatEntrada() {
+  const jocId = document.getElementById('joc-select')?.value || '';
+  const potEntrar = !!jocId;
+  const btnConfirmar = document.getElementById('btn-confirmar-joc');
+  const btnNomDesat = document.querySelector('.btn-nom-desat');
+  if (btnConfirmar) btnConfirmar.disabled = !potEntrar;
+  if (btnNomDesat) btnNomDesat.disabled = !potEntrar;
 }
 
 // ── Entrar al joc ─────────────────────────────────────────────────────

@@ -100,6 +100,7 @@ html, body {
   transition: opacity 0.15s;
 }
 .btn-nom-desat:hover { opacity: 0.85; }
+.btn-nom-desat:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .separador {
   display: flex;
@@ -161,6 +162,7 @@ input[type="text"].error { border-color: var(--c3); animation: shake 0.4s ease; 
   transition: border-color 0.2s, color 0.2s;
 }
 .btn-confirmar:hover { border-color: var(--c1); color: var(--c1); }
+.btn-confirmar:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ── ESPERA ── */
 #screen-espera { text-align: center; }
