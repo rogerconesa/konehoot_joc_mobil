@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "konehootjocmobil",
+  "compatibility_date": "2026-05-15",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "joc_mobil"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
