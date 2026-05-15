@@ -85,6 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
 async function entrarAlJoc() {
   if (!jugadorDocId) jugadorDocId = normalitzarJugadorId(nom);
   document.getElementById('nom-confirmat').textContent = nom;
+  const connStatusEl = document.getElementById('mob-conn-status');
+  if (connStatusEl) {
+    connStatusEl.style.display = 'none';
+    connStatusEl.textContent = '';
+  }
   try {
     await setDoc(
       doc(db, 'partida', 'jugadors', jugadorDocId),
@@ -93,6 +98,10 @@ async function entrarAlJoc() {
     );
   } catch(e) {
     console.error('No s\'ha pogut registrar el jugador:', e);
+    if (connStatusEl) {
+      connStatusEl.style.display = 'block';
+      connStatusEl.textContent = 'No s\'ha pogut registrar el jugador. Recarrega la pagina.';
+    }
   }
   mostrarScreen('screen-espera');
   if (!subscripcionsIniciades) {
