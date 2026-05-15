@@ -209,11 +209,14 @@ window.respondre = async function(idx) {
   haRespost = true;
   clearInterval(timerInterval);
 
+  const preguntaActual = preguntes[partida.preguntaIndex ?? 0];
+  const esCorrecta = !!preguntaActual && idx === preguntaActual.correcta;
   const total = partida.tempsPregunta || 20;
   const tempsUsat = (Date.now() - tempsInici) / 1000;
   const tempsRapidesa = Math.max(0, total - tempsUsat);
   // Puntuació: 1000 base + fins 500 per rapidesa
   const punts = Math.round(1000 + (tempsRapidesa / total) * 500);
+  const puntsGuanyats = esCorrecta ? punts : 0;
 
   // Marca el botó
   document.querySelectorAll('.resp-btn').forEach((b, i) => {
@@ -226,14 +229,16 @@ window.respondre = async function(idx) {
     // Desa resposta
     await setDoc(
       doc(db, 'partida', 'estat', 'respostes', jugadorDocId),
-      { nom, resposta: idx, punts, timestamp: serverTimestamp() }
+      { nom, resposta: idx, punts: puntsGuanyats, timestamp: serverTimestamp() }
     );
     // Actualitza puntuació acumulada al jugador
-    await setDoc(
-      doc(db, 'partida', 'estat', 'jugadors', jugadorDocId),
-      { nom, punts: increment(punts) },
-      { merge: true }
-    );
+    if (puntsGuanyats > 0) {
+      await setDoc(
+        doc(db, 'partida', 'estat', 'jugadors', jugadorDocId),
+        { nom, punts: increment(puntsGuanyats) },
+        { merge: true }
+      );
+    }
     mostrarEsperant(idx);
   } catch(e) {
     console.error(e);
