@@ -27,9 +27,20 @@ let timerInterval = null;
 let tempsRestant  = 0;
 let tempsInici    = 0;
 let subscripcionsIniciades = false;
+let jugadorDocId  = '';
 
 // ── Nom d'usuari ──────────────────────────────────────────────────────
 const LS_NOM = 'konehoot_nom_joc';
+
+function normalitzarJugadorId(rawNom) {
+  const base = String(rawNom || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[.#$\[\]/]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_-]/g, '');
+  return base || ('jugador_' + Math.random().toString(36).slice(2, 10));
+}
 
 function iniciarSeleccioNom() {
   const nomDesat = localStorage.getItem(LS_NOM);
@@ -58,6 +69,7 @@ window.confirmarNom = function() {
     return;
   }
   nom = val;
+  jugadorDocId = normalitzarJugadorId(nom);
   localStorage.setItem(LS_NOM, nom);
   entrarAlJoc();
 };
@@ -71,10 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Entrar al joc ─────────────────────────────────────────────────────
 async function entrarAlJoc() {
+  if (!jugadorDocId) jugadorDocId = normalitzarJugadorId(nom);
   document.getElementById('nom-confirmat').textContent = nom;
   try {
     await setDoc(
-      doc(db, 'partida', 'jugadors', nom),
+      doc(db, 'partida', 'jugadors', jugadorDocId),
       { nom, punts: 0, connectatAt: serverTimestamp() },
       { merge: true }
     );
@@ -203,12 +216,12 @@ window.respondre = async function(idx) {
   try {
     // Desa resposta
     await setDoc(
-      doc(db, 'partida', 'estat', 'respostes', nom),
+      doc(db, 'partida', 'estat', 'respostes', jugadorDocId),
       { nom, resposta: idx, punts, timestamp: serverTimestamp() }
     );
     // Actualitza puntuació acumulada al jugador
     await setDoc(
-      doc(db, 'partida', 'jugadors', nom),
+      doc(db, 'partida', 'jugadors', jugadorDocId),
       { nom, punts: increment(punts) },
       { merge: true }
     );
@@ -232,7 +245,7 @@ async function mostrarResultatsUsuari() {
 
   // Comprova si ha respost correctament
   try {
-    const resDoc = await getDoc(doc(db, 'partida', 'estat', 'respostes', nom));
+    const resDoc = await getDoc(doc(db, 'partida', 'estat', 'respostes', jugadorDocId));
     if (resDoc.exists()) {
       const resp = resDoc.data();
       const encertat = resp.resposta === p.correcta;
@@ -255,7 +268,7 @@ async function mostrarResultatsUsuari() {
 
   // Puntuació total
   try {
-    const jugDoc = await getDoc(doc(db, 'partida', 'jugadors', nom));
+    const jugDoc = await getDoc(doc(db, 'partida', 'jugadors', jugadorDocId));
     if (jugDoc.exists()) {
       document.getElementById('res-total-punts').textContent = `Total: ${jugDoc.data().punts} pts`;
     }
@@ -268,7 +281,7 @@ async function mostrarResultatsUsuari() {
 async function mostrarFinalUsuari() {
   clearInterval(timerInterval);
   try {
-    const jugDoc = await getDoc(doc(db, 'partida', 'jugadors', nom));
+    const jugDoc = await getDoc(doc(db, 'partida', 'jugadors', jugadorDocId));
     if (jugDoc.exists()) {
       document.getElementById('final-punts').textContent = jugDoc.data().punts;
     }
