@@ -91,8 +91,8 @@ async function entrarAlJoc() {
     connStatusEl.textContent = '';
   }
   try {
-    await setDoc(
-      doc(db, 'partida', 'jugadors', jugadorDocId),
+      await setDoc(
+      doc(db, 'partida', 'estat', 'jugadors', jugadorDocId),
       { nom, punts: 0, connectatAt: serverTimestamp() },
       { merge: true }
     );
@@ -230,7 +230,7 @@ window.respondre = async function(idx) {
     );
     // Actualitza puntuació acumulada al jugador
     await setDoc(
-      doc(db, 'partida', 'jugadors', jugadorDocId),
+      doc(db, 'partida', 'estat', 'jugadors', jugadorDocId),
       { nom, punts: increment(punts) },
       { merge: true }
     );
@@ -277,7 +277,7 @@ async function mostrarResultatsUsuari() {
 
   // Puntuació total
   try {
-    const jugDoc = await getDoc(doc(db, 'partida', 'jugadors', jugadorDocId));
+    const jugDoc = await getDoc(doc(db, 'partida', 'estat', 'jugadors', jugadorDocId));
     if (jugDoc.exists()) {
       document.getElementById('res-total-punts').textContent = `Total: ${jugDoc.data().punts} pts`;
     }
@@ -290,7 +290,7 @@ async function mostrarResultatsUsuari() {
 async function mostrarFinalUsuari() {
   clearInterval(timerInterval);
   try {
-    const jugDoc = await getDoc(doc(db, 'partida', 'jugadors', jugadorDocId));
+    const jugDoc = await getDoc(doc(db, 'partida', 'estat', 'jugadors', jugadorDocId));
     if (jugDoc.exists()) {
       document.getElementById('final-punts').textContent = jugDoc.data().punts;
     }
