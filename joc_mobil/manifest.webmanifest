@@ -1,7 +1,9 @@
 {
   "name": "Konehoot JOC Mobil",
   "short_name": "Konehoot",
-  "start_url": "./index.html",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
